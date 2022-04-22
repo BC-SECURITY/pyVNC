@@ -230,17 +230,13 @@ class _baseDes(object):
     def _guardAgainstUnicode(self, data):
         # Only accept byte strings or ascii unicode values, otherwise
         # there is no way to correctly decode the data into bytes.
-        if _pythonMajorVersion < 3:
-            if isinstance(data, unicode):
-                raise ValueError("pyDes can only work with bytes, not Unicode strings.")
-        else:
-            if isinstance(data, str):
-                # Only accept ascii unicode values.
-                try:
-                    return data.encode('ascii')
-                except UnicodeEncodeError:
-                    pass
-                raise ValueError("pyDes can only work with encoded strings, not Unicode.")
+        if isinstance(data, str):
+            # Only accept ascii unicode values.
+            try:
+                return data.encode('UTF-8')
+            except UnicodeEncodeError:
+                pass
+            raise ValueError("pyDes can only work with encoded strings, not Unicode.")
         return data
 
 
@@ -425,6 +421,8 @@ class des(_baseDes):
         pos = 0
         for ch in data:
             i = 7
+            if isinstance(ch, str):
+                ch = ord(ch)
             while i >= 0:
                 if ch & (1 << i) != 0:
                     result[pos] = 1
