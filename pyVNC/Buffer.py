@@ -74,60 +74,10 @@ class DisplayBuffer(Buffer):
         return self._canvas
 
     def loop(self, dum=None):
-        no_work = self.check_events()
-        reactor.callLater(no_work and 0.0050, self.loop)
+        reactor.callLater(0.005, self.loop)
 
-    def check_events(self):
-        seen_events = 0
+    def key_event(self, key, down):
+        self.protocol.key_event(key, down)
 
-        if self.protocol is None:
-            return seen_events
-
-        for e in pygame.event.get():
-            seen_events = 1
-
-            if e.type == QUIT:
-                reactor.stop()
-
-            if e.type == KEYDOWN:
-                if e.key in MODIFIERS:
-                    self.protocol.key_event(MODIFIERS[e.key], down=1)
-                elif e.key in KEYMAPPINGS:
-                    self.protocol.key_event(KEYMAPPINGS[e.key], down=1)
-                elif e.unicode:
-                    print(ord(e.unicode))
-                    self.protocol.key_event(ord(e.unicode))
-                else:
-                    print("warning: unknown key %r" % (e))
-
-            if e.type == KEYUP:
-                if e.key in MODIFIERS:
-                    self.protocol.key_event(MODIFIERS[e.key], down=0)
-                if e.key in KEYMAPPINGS:
-                    self.protocol.key_event(KEYMAPPINGS[e.key], down=0)
-
-            if e.type == MOUSEMOTION:
-                self.buttons = e.buttons[0] and 1
-                self.buttons |= e.buttons[1] and 2
-                self.buttons |= e.buttons[2] and 4
-                self.protocol.pointer_event(e.pos[0], e.pos[1], self.buttons)
-
-            if e.type == MOUSEBUTTONUP:
-                if e.button == 1: self.buttons &= ~1
-                if e.button == 2: self.buttons &= ~2
-                if e.button == 3: self.buttons &= ~4
-                if e.button == 4: self.buttons &= ~8
-                if e.button == 5: self.buttons &= ~16
-                self.protocol.pointer_event(e.pos[0], e.pos[1], self.buttons)
-
-            if e.type == MOUSEBUTTONDOWN:
-                if e.button == 1: self.buttons |= 1
-                if e.button == 2: self.buttons |= 2
-                if e.button == 3: self.buttons |= 4
-                if e.button == 4: self.buttons |= 8
-                if e.button == 5: self.buttons |= 16
-                self.protocol.pointer_event(e.pos[0], e.pos[1], self.buttons)
-
-            return not seen_events
-        return not seen_events
-
+    def pointer_event(self, x, y, buttons):
+        self.protocol.pointer_event(x, y, buttons)
