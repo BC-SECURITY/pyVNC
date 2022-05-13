@@ -1,5 +1,7 @@
 from threading import Thread
 from twisted.internet import reactor, task
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import time
 from pyVNC import constants
